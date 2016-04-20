@@ -1,0 +1,141 @@
+---
+title: "Voter EDA"
+author: "Keith G. Williams 800690755"
+date: "Tuesday, April 19, 2016"
+output: html_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+This document is meant to be a mock-up of ideas for DSBA 5122 Visual Analytics Project.
+
+Load the Voter Data from Mecklenburg County Board of Elections.  
+```{r, cache=TRUE}
+library(readr)
+setwd('~/DSBA 5122/Project')
+
+voter <- read_csv('meck_voter.csv')
+```
+
+Clean  
+```{r}
+library(stringr)
+
+# Party Codes
+voter$party_code <- str_replace_all(voter$party_code, '\r', '')
+voter$party_code[voter$party_code == ""] <- NA
+
+# District Descriptions
+voter$ward_desc <- str_replace_all(voter$ward_desc,
+                                   'CITY COUNCIL DISTRICT ',
+                                   '')
+voter$cong_dist_desc <- str_replace_all(voter$cong_dist_desc,
+                                   'CONGRESSIONAL DISTRICT ',
+                                   '')
+voter$super_court_desc <- str_replace_all(voter$super_court_desc,
+                                   'JUDICIAL DISTRICT ',
+                                   '')
+voter$nc_senate_desc <- str_replace_all(voter$nc_senate_desc,
+                                   'NC SENATE DISTRICT ',
+                                   '')
+voter$nc_house_desc <- str_replace_all(voter$nc_house_desc,
+                                   'NC HOUSE DISTRICT ',
+                                   '')
+voter$county_commiss_desc <- str_replace_all(voter$county_commiss_desc,
+                                   'BOARD OF COMMISSIONERS DISTRICT ',
+                                   '')
+voter$school_dist_desc <- str_replace_all(voter$school_dist_desc,
+                                   'SCHOOL BOARD DIST ',
+                                   '')
+voter$judic_dist_desc <- str_replace_all(voter$judic_dist_desc,
+                                   'JUDICIAL DISTRICT ',
+                                   '')
+```
+
+Visualize vote counts by election date  
+```{r, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+
+ct_by_date <- voter %>%
+    group_by(edate, party_code) %>%
+    summarise(n = n())
+
+p1 <-ggplot(ct_by_date, aes(as.factor(edate), n)) + 
+    geom_bar(stat="identity") +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5)) +
+    labs(x = "Election Date",
+         y = "Number of Votes")
+p1
+```
+
+Examples of how this data can be "drilled-down". Imagine a Check box on the left that allows the user to select which attributes the counts should be aggregated by. When clicking on "Party", the previous graph turns into this graph.
+```{r, echo=FALSE}
+p2 <- ggplot(ct_by_date, 
+       aes(as.factor(edate), n, fill=party_code)) +
+    geom_bar(stat="identity", position = "dodge") +
+    scale_fill_manual(values=c('#377eb8', '#4daf4a', '#e41a1c', '#969696')) +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5)) +
+    labs(x = "Election Date",
+         y = "Number of Votes")
+
+p2
+```
+
+Since "LIB" appears so little, maybe the user can filter out these records:  
+```{r, echo=FALSE}
+p3 <- ggplot(filter(ct_by_date, party_code != "LIB"), 
+    aes(as.factor(edate), n, fill=party_code)) +
+    geom_bar(stat="identity", position = "dodge") +
+    scale_fill_manual(values=c('#377eb8', '#e41a1c', '#969696')) +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5)) +
+    labs(x = "Election Date",
+         y = "Number of Votes")
+
+p3
+```
+
+Example of making this interactive. Hover and Zoom features are nice here. Clicking on the legend is not that useful in this case.  
+```{r, echo=FALSE}
+library(plotly)
+ggplotly(p2)
+```
+
+Other aggregations could be race, gender, age, congressional district (there are only 3 in Mecklenburg County), superior court district (again, only 3 in Mecklenburg County).
+
+Next, a map like the one we can make in Tableau would be nice.
+
+```{r, echo=FALSE}
+# install from github
+#library(devtools)
+#install_github('arilamstein/choroplethrZip@v1.5.0')
+library(choroplethrZip)
+meck_county <- 37119 #FIPS code for Mecklenburg County
+
+# create data frame for plotting
+county_votes <- voter %>%
+    group_by(zip_code) %>%
+    summarise(value = n()) %>%
+    rename(region = zip_code) %>%
+    mutate(region = as.character(region))
+
+zip_votes <- zip_choropleth(county_votes,
+                            county_zoom = meck_county,
+                            title = "Total Votes by Zip Code 2008 - 2015",
+                            legend = "Number of Votes",
+                            num_colors=1,
+                            reference_map = FALSE)
+
+zip_votes
+```
+
+This map could come with an option to filter on election dates or by party or by demographics. Here's an example with a reference map turned "ON":  
+```{r, echo=FALSE}
+zip_choropleth(county_votes, county_zoom = meck_county,
+               title = "Total Votes by Zip Code 2008 - 2015",
+               legend = "Number of Votes",
+               num_colors=1,
+               reference_map = TRUE)
+```
