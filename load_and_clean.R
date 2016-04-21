@@ -50,6 +50,12 @@ voter$school_dist_desc <- str_replace_all(voter$school_dist_desc,
                                           'SCHOOL BOARD DIST ',
                                           '')
 
+# Zip Codes
+voter$zip_code[voter$zip_code == 28035] <- 28036 # Davidson College
+voter$zip_code[voter$zip_code == 28223] <- 28262 # UNCC
+voter$zip_code[voter$zip_code == 28274] <- 28207 # Queens University
+
+
 # Create Aggregated Vote Count on Election Date, grouped by demographics
 ct_by_dt <- voter %>%
     group_by(edate, party_code, sex_code, race_code) %>%

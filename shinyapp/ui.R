@@ -14,10 +14,23 @@ shinyUI(
                           'race' = 'race',
                           'none' = 'none'),
                         selected = 'none'
-                        ) #selectInput
+                        ), #selectInput
+            br(),
+            br(),
+            radioButtons("map", "Reference Map:",
+                         c("off" = FALSE,
+                           "on" = TRUE)
+                ) #radioButtons
             ), #sidebarPanel
         mainPanel(
-            plotlyOutput("by_date", height="800px")
+            tabsetPanel(
+                tabPanel("tab 1",
+                    plotOutput("by_date")
+                    ),
+                tabPanel("tab 2",
+                    plotOutput("zip")
+                    )
+                ) #tabsetPanel
             ) #mainPanel
         ) #pageWithSidebar
     ) #shinyUI

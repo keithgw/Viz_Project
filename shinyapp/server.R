@@ -2,11 +2,15 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
+library(choroplethrZip)
 library(plotly)
 
 # load aggregated voter data
 ct_by_dt <- readRDS('ct_by_dt.rda')
 zip_votes <- readRDS('zip_votes.rda')
+
+# constants
+meck_county <- 37119 #FIPS code for Meck County
 
 # Initialize shiny Server
 shinyServer(
@@ -61,10 +65,20 @@ shinyServer(
                          y = "Thousands of Votes",
                          title = "Voters by Election Date")
             }
-            return(ggplotly(g))
+            return(g)
         }) #reactive
         
-        output$by_date <- renderPlotly({ag_plot()})
+        output$by_date <- renderPlot({ag_plot()})
+        
+        output$zip <- renderPlot({
+            zip_votes <- zip_choropleth(zip_votes,
+                                        county_zoom = meck_county,
+                                        title = "Total Votes by Zip Code 2008 - 2015",
+                                        legend = "Number of Votes",
+                                        num_colors=1,
+                                        reference_map = input$map)
+            zip_votes
+        })
         
         
     } #function(input, output)

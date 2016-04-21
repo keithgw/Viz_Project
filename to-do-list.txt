@@ -1,0 +1,19 @@
+To Do for Viz Project
+
+## Bar Graph
+1. Plotly not rendering properly
+	* Try having each drill down use its own data frame.
+2. Add filter by date Check Boxes
+	* Include in labels "presidential", "midterm", "<other>"
+3. Consider Coloring the Aggregated vote count by election type "presidential", "midterm", "<other>" Get Yummy's opinion
+
+## Histogram
+1. Add data for histogram
+	* Find data size the will load quickly
+2. Use same Filter Check box for election date.
+3. Add slider to adjust bin size.
+3. If plotly will render, include drill down coloring. Plotly necessary to turn subgroups on/off
+
+## Choropleth
+1. Check that new Zip codes allows for faster rendering.
+2. Use same Filter Check box for election date.
