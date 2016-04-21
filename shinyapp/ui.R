@@ -1,49 +1,23 @@
 # load libraries
 library(shiny)
 
-# Initialize Shiny UI
-# shinyUI(
-#     pageWithSidebar(
-#         headerPanel("Mecklenburg County Voter History"),
-#         sidebarPanel(
-#             h3("Aggregate Votes"),
-#             selectInput('ag_param',
-#                         'Choose Demographic Drill Down',
-#                         c('registered party' = 'party',
-#                           'sex' = 'sex',
-#                           'none' = 'none'),
-#                         selected = 'none'
-#                         )            
-#             ),
-#         mainPanel(
-#             tabsetPanel(
-#                 tabPanel("Voter History",
-#                          h3('Plot Output')#,
-#                          #plotOutput("ag_plot", width = "40%")
-#                     )
-#                 )
-#         )
-#     )
-# )
+# Initialize shiny UI
 shinyUI(
     pageWithSidebar(
-        headerPanel("Header"),
+        headerPanel("Header Panel"),
         sidebarPanel(
-            h3("header 3"),
+            h3("h3"),
             selectInput('ag_param',
-                        'Drill Down',
-                        c('registered party' = 'party',
-                          'sex1' = 'sex',
-                          'none' = 'null'),
+                        'Demographic',
+                        c('registered party' = 'party', 
+                          'sex' = 'sex', 
+                          'race' = 'race',
+                          'none' = 'none'),
                         selected = 'none'
-                )
-            ),
+                        ) #selectInput
+            ), #sidebarPanel
         mainPanel(
-            tabsetPanel(
-                tabPanel("tab 1",
-                         plotOutput("ag_plot", width = "40%")
-                         )
-                )
-            )
-        )
-    )
+            plotlyOutput("by_date", height="800px")
+            ) #mainPanel
+        ) #pageWithSidebar
+    ) #shinyUI

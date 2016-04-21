@@ -15,7 +15,17 @@ voter$party_code <- str_replace_all(voter$party_code, '\r', '')
 voter$party_code[voter$party_code == ""] <- NA
 
 # Sex Codes
-voter$sex_code <- str_replace_all(voter$sex_code, '', 'U')
+voter$sex_code[voter$sex_code == ''] <- 'unk'
+voter$sex_code[voter$sex_code == 'U'] <- 'unk'
+
+# More Descriptive Race Codes
+voter$race_code[voter$race_code == 'W'] <- 'White'
+voter$race_code[voter$race_code == 'U'] <- 'Undesignated'
+voter$race_code[voter$race_code == 'B'] <- 'Black'
+voter$race_code[voter$race_code == 'O'] <- 'Other'
+voter$race_code[voter$race_code == 'A'] <- 'Asian'
+voter$race_code[voter$race_code == 'M'] <- 'Multi-Racial'
+voter$race_code[voter$race_code == 'I'] <- 'Am-Indian'
 
 # District Descriptions
 voter$ward_desc <- str_replace_all(voter$ward_desc,
@@ -40,30 +50,22 @@ voter$school_dist_desc <- str_replace_all(voter$school_dist_desc,
                                           'SCHOOL BOARD DIST ',
                                           '')
 
-# Remove unused attributes for smaller data footprint
-v_small <- voter %>%
-    select(-first_name,
-           -middle_name,
-           -last_name,
-           -name_suffix_lbl,
-           -pct_portion,
-           -full_name_mail,
-           -mail_addr1,
-           -mail_addr2,
-           -mail_addr3,
-           -mail_addr4,
-           -mail_city_state_zip,
-           -house_num,
-           -half_code,
-           -street_dir,
-           -street_name,
-           -street_type_cd,
-           -street_sufx_cd,
-           -unit_designator,
-           -unit_num,
-           -judic_dist_desc,
-           -dist_1_desc
-           )
+# Create Aggregated Vote Count on Election Date, grouped by demographics
+ct_by_dt <- voter %>%
+    group_by(edate, party_code, sex_code, race_code) %>%
+    summarise(n = n())
 
 # Write CSV to RDA for quick load in shiny
-saveRDS(v_small, "voter.rda")
+saveRDS(ct_by_dt, "ct_by_dt.rda")
+
+# Create Aggregated Vote Counts by Zip Code for Colorpleth
+meck_county <- 37119 #FIPS code for Mecklenburg County
+
+# create data frame for plotting
+zip_votes <- voter %>%
+    group_by(zip_code) %>%
+    summarise(value = n()) %>%
+    rename(region = zip_code) %>%
+    mutate(region = as.character(region))
+
+saveRDS(zip_votes, "zip_votes.rda")
